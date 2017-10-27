@@ -7,19 +7,46 @@
 //
 
 import UIKit
+import CoreLocation
 
 class ViewController: UIViewController {
+  
+  var manager: CLLocationManager?
+  var startLocation: CLLocation?
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Do any additional setup after loading the view, typically from a nib.
+    
+    manager = CLLocationManager()
+    manager?.delegate = self
+    manager?.desiredAccuracy = kCLLocationAccuracyBest
+    manager?.requestWhenInUseAuthorization()
   }
 
   override func didReceiveMemoryWarning() {
     super.didReceiveMemoryWarning()
-    // Dispose of any resources that can be recreated.
   }
 
+}
 
+extension ViewController: CLLocationManagerDelegate {
+  
+  // Respond to any locations that come to the app
+  func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    if startLocation == nil {
+      startLocation = locations.first
+    } else {
+      guard let latest = locations.first else { return }
+      let distanceInMeters = startLocation?.distance(from: latest)
+      print("distance in meters: \(distanceInMeters)")
+    }
+  }
+  
+  func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    if status == .authorizedWhenInUse || status == .authorizedAlways {
+      manager.startUpdatingLocation()
+    }
+  }
+  
 }
 
